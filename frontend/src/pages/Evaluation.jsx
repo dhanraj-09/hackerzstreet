@@ -191,6 +191,12 @@ function EvaluationModal({ onClose })
                                     }
                                             </div>
                                         </div>
+                            <div className={"section"}>
+                                <h3 className={"section-title"}>
+                                    <span className={"section-number number-green"}>2</span>
+
+                                </h3>
+                            </div>
 
 
 
