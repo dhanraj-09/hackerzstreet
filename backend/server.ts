@@ -11,6 +11,7 @@ app.use(express.json());
 
 app.post("/", (req: Request, res: Response) => {
   const { language, field } = req.body; // Destructure the data from body
+  console.log("Got request");
 
   res.json({ language, field });
 });
