@@ -24,9 +24,17 @@ export default function EvaluationModal({ onClose }: EvaluationModalProps) {
     }
   };
 
+  const getJSON = ()=>{
+    const object = {
+        field,
+        language
+    }
+    return object;
+  }
+
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-black/10 mx-4 border border-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 w-full max-w-lg text-white space-y-6">
+      <div className="bg-black mx-4 border border-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 w-full max-w-lg text-white space-y-6">
 
         {step === 0 && (
           <form onSubmit={handleKnowledgeSubmit} className="space-y-6">
