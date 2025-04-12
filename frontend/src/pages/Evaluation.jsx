@@ -222,24 +222,3 @@ function EvaluationModal({ onClose })
         </div>
     );
 }
-
-
-// <div className={"container"}>
-//     <div className={"header"}>
-//         <h1>Knowledge</h1>
-//     </div>
-//     <div className={"container"}>
-//         <div className={"Languages"}>
-//             <div></div>
-//             <div></div>
-//         </div>
-//         <div className={"dev_fields"}>
-//             <div></div>
-//             <div></div>
-//         </div>
-//         <div className={"dsa"}>
-//             <div></div>
-//             <div></div>
-//         </div>
-//     </div>
-// </div>
