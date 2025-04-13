@@ -119,70 +119,196 @@ const NextButton = styled(Button)`
 
 export default function PotentialTest() {
   const [answer, setAnswer] = useState('');
+  const [question, setQuestion] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [questionCount, setQuestionCount] = useState(0);
+  const [error, setError] = useState('');
   const router = useRouter();
   
-  const question = "What are the potential implications of artificial intelligence on human creativity and artistic expression?";
-
+  // Initialize quiz and fetch first question
   useEffect(() => {
-    const element = document.documentElement;
-    let fullscreenInterval;
-
-    const enterFullscreen = async () => {
+    const initializeQuiz = async () => {
       try {
-        if (!document.fullscreenElement) {
-          await element.requestFullscreen({ navigationUI: 'hide' });
+        setError('');
+        // Initialize the quiz
+        const initResponse = await fetch('http://192.168.131.108:5000/api/quiz', {
+          method: 'GET',
+        });
+
+        if (!initResponse.ok) {
+          throw new Error('Failed to initialize quiz');
         }
-      } catch (err) {
-        console.error('Error attempting to enable full-screen mode:', err);
+
+        // Get the first question
+        const response = await fetch('http://192.168.131.108:5000/api/question', {
+          method: 'GET',
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch question');
+        }
+
+        const data = await response.json();
+        if (data.success) {
+          setQuestion(data.question);
+          setQuestionCount(1);
+        } else {
+          throw new Error('Invalid response from server');
+        }
+      } catch (error) {
+        console.error('Error initializing quiz:', error);
+        setError('Failed to start quiz. Please try again.');
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    const enforceFullscreen = () => {
-      if (!document.fullscreenElement) {
-        enterFullscreen();
-      }
-    };
-
-    // Initial setup
-    enterFullscreen();
-    fullscreenInterval = setInterval(enforceFullscreen, 100);
-
-    const handleFullscreenChange = () => {
-      if (!document.fullscreenElement) {
-        enterFullscreen();
-      }
-    };
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-
-    return () => {
-      clearInterval(fullscreenInterval);
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      }
-    };
+    initializeQuiz();
   }, []);
+
+  // Handle submitting answer and getting next question
+  const handleSubmitAnswer = async () => {
+    if (!answer.trim()) return;
+
+    try {
+      setError('');
+      // Submit the answer
+      const response = await fetch('http://192.168.131.108:5000/api/answer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ answer }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit answer');
+      }
+
+      const data = await response.json();
+
+      // If there are more questions, get the next one
+      if (!data.end) {
+        const nextQuestionResponse = await fetch('http://192.168.131.108:5000/api/question', {
+          method: 'GET',
+        });
+
+        if (!nextQuestionResponse.ok) {
+          throw new Error('Failed to fetch next question');
+        }
+
+        const nextQuestionData = await nextQuestionResponse.json();
+        if (nextQuestionData.success) {
+          setQuestion(nextQuestionData.question);
+          setAnswer('');
+          setQuestionCount(prev => prev + 1);
+        } else {
+          throw new Error('Invalid response from server');
+        }
+      } else {
+        // Quiz is complete, redirect to report
+        if (document.fullscreenElement) {
+          await document.exitFullscreen();
+        }
+        router.push('/report');
+      }
+    } catch (error) {
+      console.error('Error submitting answer:', error);
+      setError('Failed to submit answer. Please try again.');
+    }
+  };
+
+  const handleSkip = async () => {
+    try {
+      setError('');
+      // Submit empty answer to maintain question count
+      const skipResponse = await fetch('http://192.168.131.108:5000/api/answer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ answer: "" }),
+      });
+
+      if (!skipResponse.ok) {
+        throw new Error('Failed to skip question');
+      }
+
+      // Get next question
+      const response = await fetch('http://192.168.131.108:5000/api/question', {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch next question');
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        setQuestion(data.question);
+        setAnswer('');
+        setQuestionCount(prev => prev + 1);
+      } else {
+        throw new Error('Invalid response from server');
+      }
+
+      // Check if we should redirect to report
+      if (questionCount >= 5) {
+        if (document.fullscreenElement) {
+          await document.exitFullscreen();
+        }
+        router.push('/report');
+      }
+    } catch (error) {
+      console.error('Error skipping question:', error);
+      setError('Failed to skip question. Please try again.');
+    }
+  };
 
   const handleGiveUp = async () => {
     try {
       if (document.fullscreenElement) {
         await document.exitFullscreen();
       }
-      router.push('/results');
+      router.push('/report');
     } catch (err) {
-      console.error('Error exiting fullscreen:', err);
-      router.push('/results');
+      console.error('Error giving up:', err);
+      router.push('/report');
     }
   };
 
-  const handleSkip = () => {
-    setAnswer('');
-  };
+  if (isLoading) {
+    return (
+      <FullScreenContainer>
+        <QuestionCard>
+          <Header>
+            <QuestionText>Loading...</QuestionText>
+          </Header>
+        </QuestionCard>
+      </FullScreenContainer>
+    );
+  }
 
-  const handleNext = () => {
-    setAnswer('');
-  };
+  if (error) {
+    return (
+      <FullScreenContainer>
+        <QuestionCard>
+          <Header>
+            <QuestionText>Error</QuestionText>
+          </Header>
+          <AnswerContainer>
+            <p className="text-red-500">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+            >
+              Try Again
+            </button>
+          </AnswerContainer>
+        </QuestionCard>
+      </FullScreenContainer>
+    );
+  }
 
   return (
     <FullScreenContainer>
@@ -201,7 +327,7 @@ export default function PotentialTest() {
         <ButtonContainer>
           <GiveUpButton onClick={handleGiveUp}>Give Up</GiveUpButton>
           <SkipButton onClick={handleSkip}>Skip</SkipButton>
-          <NextButton onClick={handleNext}>Next</NextButton>
+          <NextButton onClick={handleSubmitAnswer}>Next</NextButton>
         </ButtonContainer>
       </QuestionCard>
     </FullScreenContainer>
