@@ -1,5 +1,6 @@
 "use client";
 import { useState, ChangeEvent, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 
 type EvaluationModalProps = {
   onClose: () => void;
@@ -39,6 +40,7 @@ export default function EvaluationModal({ onClose }: EvaluationModalProps) {
   const [step, setStep] = useState(0);
   const [language, setLanguage] = useState("");
   const [field, setField] = useState("");
+  const router = useRouter();
 
   const handleNext = (e: FormEvent) => {
     e.preventDefault();
@@ -49,7 +51,27 @@ export default function EvaluationModal({ onClose }: EvaluationModalProps) {
 
   return (
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-        <div className="bg-black mx-4 border border-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 w-full max-w-lg text-white space-y-6">
+        <div className="relative bg-black mx-4 border border-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 w-full max-w-lg text-white space-y-6">
+          {/* Close Button - Top Right */}
+          <button
+              onClick={onClose}
+              className="absolute top-4 right-4 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition"
+              aria-label="Close modal"
+          >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+            >
+              <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+              />
+            </svg>
+          </button>
+
           {step === 0 && (
               <form onSubmit={handleNext} className="space-y-6">
                 <h2 className="text-2xl font-bold text-center text-white">

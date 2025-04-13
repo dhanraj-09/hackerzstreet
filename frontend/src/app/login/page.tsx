@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -12,7 +11,6 @@ function LoginPage() {
     confirmPassword: '',
   });
 
-  const router = useRouter();
 
   const toggleMode = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();

@@ -14,8 +14,7 @@ export default function EvaluationPage() {
             <div className="absolute -bottom-32 -right-32 w-[400px] h-[400px] bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
 
             {/* Title */}
-            <h1 className="text-5xl font-extrabold text-center drop-shadow-md z-10">
-                🎯 Skill Evaluation Portal
+            <h1 className="text-5xl font-extrabold text-center drop-shadow-md z-10">Skill Evaluation Portal
             </h1>
 
             {/* Description */}
